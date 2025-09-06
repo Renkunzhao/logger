@@ -3,6 +3,7 @@ project(logger VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(catkin QUIET)
 if(catkin_FOUND)
@@ -37,7 +38,7 @@ target_include_directories(CsvLogger
 ##############################
 
 # 安装库
-install(TARGETS CsvLogger EXPORT CsvLogger_Targets
+install(TARGETS CsvLogger EXPORT logger_Targets
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin
@@ -47,10 +48,10 @@ install(TARGETS CsvLogger EXPORT CsvLogger_Targets
 install(DIRECTORY include/ DESTINATION include)
 
 # 安装导出文件
-install(EXPORT CsvLogger_Targets
-        FILE CsvLoggerConfig.cmake
-        NAMESPACE CsvLogger::
-        DESTINATION lib/cmake/CsvLogger)
+install(EXPORT logger_Targets
+        FILE loggerConfig.cmake
+        NAMESPACE logger::
+        DESTINATION lib/cmake/logger)
 
 ##############################
 # Test 
@@ -71,7 +72,7 @@ if(catkin_FOUND)
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
     )
-    install(DIRECTORY include/CsvLogger/
+    install(DIRECTORY include/logger/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
     )
 endif()

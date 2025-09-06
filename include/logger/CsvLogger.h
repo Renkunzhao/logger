@@ -1,87 +1,64 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <map>
 #include <set>
+#include <cstdint>
 #include <Eigen/Dense>
 
 /**
  * @class CsvLogger
- * @brief 一个单例类，用于在程序的不同位置记录数据，并最终保存为一个时间对齐的CSV文件。
+ * @brief 单例类，用于记录程序中的数据，并最终保存为时间对齐的CSV文件。
  *
- * 这个类被设计用来解决在实时控制系统中，来自不同频率的模块的数据记录问题。
+ * 内部时间戳使用 int64_t（毫秒）存储，保证不同模块的数据对齐不会受浮点误差影响。
  */
 class CsvLogger {
 public:
-    /**
-     * @brief 获取CsvLogger的全局唯一实例。
-     * @return 对CsvLogger实例的引用。
-     */
     static CsvLogger& getInstance();
 
-    // 删除拷贝构造函数和赋值运算符，以保证单例的唯一性。
     CsvLogger(const CsvLogger&) = delete;
     void operator=(const CsvLogger&) = delete;
 
-    /**
-     * @brief 设置最终输出的CSV文件路径。
-     * @param path 文件路径字符串。
-     */
     void setCsvPath(const std::string& path);
 
-    /**
-     * @brief 更新一个double类型的数据。
-     * @param time 当前的时间戳。
-     * @param name 数据的名称，将作为CSV的列标题。
-     * @param value 数据的值。
-     */
-    void update(double time, const std::string& name, double value);
+    /// 初始化，记录开始时间
+    void init();
 
-    /**
-     * @brief 更新一个int类型的数据（会被转换为double存储）。
-     * @param time 当前的时间戳。
-     * @param name 数据的名称。
-     * @param value 数据的值。
-     */
-    void update(double time, const std::string& name, int value);
+    // ----------------------------
+    // 使用系统时间的接口
+    // ----------------------------
+    void update(const std::string& name, double value);
+    void update(const std::string& name, int value);
+    void update(const std::string& name, const Eigen::Vector3d& vec);
+    void update(const std::string& name, const Eigen::VectorXd& vec);
 
-    /**
-     * @brief 更新一个Eigen::Vector3d类型的数据。
-     * 它会被自动展开为三列：name_x, name_y, name_z。
-     * @param time 当前的时间戳。
-     * @param name 向量的名称。
-     * @param vec 3D向量。
-     */
-    void update(double time, const std::string& name, const Eigen::Vector3d& vec);
-    
-    /**
-     * @brief 更新一个动态大小的Eigen::VectorXd类型的数据。
-     * 它会被自动展开为多列：name_0, name_1, ...
-     * @param time 当前的时间戳。
-     * @param name 向量的名称。
-     * @param vec 动态大小的向量。
-     */
-    void update(double time, const std::string& name, const Eigen::VectorXd& vec);
+    // ----------------------------
+    // 支持 double 秒的接口
+    // ----------------------------
+    void update(double time_sec, const std::string& name, double value);
+    void update(double time_sec, const std::string& name, int value);
+    void update(double time_sec, const std::string& name, const Eigen::Vector3d& vec);
+    void update(double time_sec, const std::string& name, const Eigen::VectorXd& vec);
 
-    /**
-     * @brief 将所有缓冲的数据保存到指定的CSV文件中。
-     * 该函数会将不同频率记录的数据在时间轴上对齐。
-     */
+    // ----------------------------
+    // 支持 int64_t 毫秒的接口
+    // ----------------------------
+    void update(int64_t time_ms, const std::string& name, double value);
+    void update(int64_t time_ms, const std::string& name, int value);
+    void update(int64_t time_ms, const std::string& name, const Eigen::Vector3d& vec);
+    void update(int64_t time_ms, const std::string& name, const Eigen::VectorXd& vec);
+
     void save();
-    
-    /**
-     * @brief 清空所有已记录的数据和时间戳。
-     */
     void clear();
 
 private:
-    // 私有构造函数，确保只能通过getInstance()创建实例
     CsvLogger();
 
+    // 辅助函数：double 秒 -> int64 毫秒
+    static int64_t timeToInt(double time_sec) { return static_cast<int64_t>(time_sec * 1e3); }
+
     std::string csv_path_;
-    std::set<double> timestamps_set_; // 使用set来存储唯一且自动排序的时间戳
-    
-    // 核心数据结构: map<变量名, map<时间戳, 值>>
-    std::map<std::string, std::map<double, double>> data_;
+    std::set<int64_t> timestamps_set_; // 使用整数毫秒时间戳
+    std::map<std::string, std::map<int64_t, double>> data_;
+    int64_t start_time_ms_{0}; // 记录开始时间
 };
