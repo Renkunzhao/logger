@@ -57,6 +57,14 @@ void CsvLogger::update(int64_t time_ms, const std::string& name, const Eigen::Ve
     }
 }
 
+void CsvLogger::update(int64_t time_ms, const std::string& name, const Eigen::MatrixXd& mat) {
+    for (int r = 0; r < mat.rows(); ++r) {
+        for (int c = 0; c < mat.cols(); ++c) {
+            update(time_ms, name + "_" + std::to_string(r) + std::to_string(c), mat(r, c));
+        }
+    }
+}
+
 // =====================
 // 自动时间戳接口
 // =====================
@@ -64,6 +72,7 @@ void CsvLogger::update(const std::string& name, double value) { update(currentTi
 void CsvLogger::update(const std::string& name, int value) { update(currentTimeMs(), name, value); }
 void CsvLogger::update(const std::string& name, const Eigen::Vector3d& vec) { update(currentTimeMs(), name, vec); }
 void CsvLogger::update(const std::string& name, const Eigen::VectorXd& vec) { update(currentTimeMs(), name, vec); }
+void CsvLogger::update(const std::string& name, const Eigen::MatrixXd& mat) {update(currentTimeMs(), name, mat); }
 
 // =====================
 // double 秒接口
@@ -81,6 +90,10 @@ void CsvLogger::update(double time_sec, const std::string& name, const Eigen::Ve
     for(int i=0; i<vec.size(); ++i) {
         update(t, name + "_" + std::to_string(i), vec(i));
     }
+}
+void CsvLogger::update(double time_sec, const std::string& name, const Eigen::MatrixXd& mat) {
+    int64_t t = timeToInt(time_sec);
+    update(t, name, mat);
 }
 
 // =====================

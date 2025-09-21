@@ -31,6 +31,7 @@ public:
     void update(const std::string& name, int value);
     void update(const std::string& name, const Eigen::Vector3d& vec);
     void update(const std::string& name, const Eigen::VectorXd& vec);
+    void update(const std::string& name, const Eigen::MatrixXd& mat);
 
     // ----------------------------
     // 支持 double 秒的接口
@@ -39,6 +40,7 @@ public:
     void update(double time_sec, const std::string& name, int value);
     void update(double time_sec, const std::string& name, const Eigen::Vector3d& vec);
     void update(double time_sec, const std::string& name, const Eigen::VectorXd& vec);
+    void update(double time_sec, const std::string& name, const Eigen::MatrixXd& mat);
 
     // ----------------------------
     // 支持 int64_t 毫秒的接口
@@ -47,6 +49,7 @@ public:
     void update(int64_t time_ms, const std::string& name, int value);
     void update(int64_t time_ms, const std::string& name, const Eigen::Vector3d& vec);
     void update(int64_t time_ms, const std::string& name, const Eigen::VectorXd& vec);
+    void update(int64_t time_ms, const std::string& name, const Eigen::MatrixXd& mat);
 
     void save();
     void clear();
