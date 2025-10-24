@@ -4,6 +4,7 @@
 #include <vector>
 #include <iomanip>
 #include <chrono>
+#include <filesystem>
 
 // --- CsvLogger 方法实现 ---
 CsvLogger::CsvLogger() = default;
@@ -99,44 +100,63 @@ void CsvLogger::update(double time_sec, const std::string& name, const Eigen::Ma
 // =====================
 // 保存 CSV
 // =====================
+
 void CsvLogger::save() {
     if (csv_path_.empty()) {
         std::cerr << "错误: CSV文件路径未设置，请调用 setCsvPath()" << std::endl;
         return;
     }
 
-    std::ofstream file(csv_path_);
-    if (!file.is_open()) {
-        std::cerr << "错误: 无法打开文件: " << csv_path_ << std::endl;
-        return;
-    }
+    namespace fs = std::filesystem;  // 方便使用
 
-    // --- 表头 ---
-    std::vector<std::string> headers{"time_s"}; // 改为秒
-    for (const auto& pair : data_) headers.push_back(pair.first);
+    try {
+        // 提取目录路径部分
+        fs::path path(csv_path_);
+        fs::path dir = path.parent_path();
 
-    for (size_t i=0; i<headers.size(); ++i) {
-        file << headers[i] << (i==headers.size()-1 ? "" : ",");
-    }
-    file << "\n";
+        // 如果有目录部分，且不存在，则创建
+        if (!dir.empty() && !fs::exists(dir)) {
+            std::cout << "目录不存在，自动创建: " << dir << std::endl;
+            fs::create_directories(dir);  // ✅ 自动递归创建所有上级目录
+        }
 
-    // --- 数据行 ---
-    for (const int64_t t : timestamps_set_) {
-        double relative_time_s = (t - start_time_ms_) / 1000.0;
-        file << std::fixed << std::setprecision(6) << relative_time_s;
+        // 打开文件
+        std::ofstream file(csv_path_);
+        if (!file.is_open()) {
+            std::cerr << "错误: 无法打开文件: " << csv_path_ << std::endl;
+            return;
+        }
 
-        for (size_t i=1; i<headers.size(); ++i) {
-            const std::string& header = headers[i];
-            const auto& var_data = data_.at(header);
-            auto it = var_data.find(t);
-            file << ",";
-            if(it != var_data.end()) file << std::fixed << std::setprecision(6) << it->second;
+        // --- 表头 ---
+        std::vector<std::string> headers{"time_s"}; // 改为秒
+        for (const auto& pair : data_) headers.push_back(pair.first);
+
+        for (size_t i=0; i<headers.size(); ++i) {
+            file << headers[i] << (i==headers.size()-1 ? "" : ",");
         }
         file << "\n";
-    }
 
-    file.close();
-    std::cout << "数据成功保存到: " << csv_path_ << std::endl;
+        // --- 数据行 ---
+        for (const int64_t t : timestamps_set_) {
+            double relative_time_s = (t - start_time_ms_) / 1000.0;
+            file << std::fixed << std::setprecision(6) << relative_time_s;
+
+            for (size_t i=1; i<headers.size(); ++i) {
+                const std::string& header = headers[i];
+                const auto& var_data = data_.at(header);
+                auto it = var_data.find(t);
+                file << ",";
+                if(it != var_data.end()) file << std::fixed << std::setprecision(6) << it->second;
+            }
+            file << "\n";
+        }
+
+        file.close();
+        std::cout << "数据成功保存到: " << csv_path_ << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "保存 CSV 时发生错误: " << e.what() << std::endl;
+    }
 }
 
 // =====================
