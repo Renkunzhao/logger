@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# 下游 find_package(logger) 时，先确保 Eigen3 target 存在
+find_dependency(Eigen3)
+
+# 导入导出的 targets（定义 logger::CsvLogger）
+include("${CMAKE_CURRENT_LIST_DIR}/loggerTargets.cmake")
