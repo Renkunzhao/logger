@@ -34,3 +34,18 @@ You can call `update` from anywhere after including the header:
 CsvLogger& saver = CsvLogger::getInstance();
 saver.update("data", data);
 ```
+
+## ROS2 Topic To CSV (Python)
+
+Build and source your workspace, then run:
+
+```bash
+ros2 run logger rostopic_to_csv.py \
+  --topic /joint_states \
+  --type sensor_msgs/msg/JointState \
+  --output /tmp/joint_states.csv
+```
+
+Notes:
+- `--type` supports both `pkg/msg/Type` and `pkg/Type`.
+- Add `--best-effort` when subscribing to sensor-like topics that use BEST_EFFORT QoS.

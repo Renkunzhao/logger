@@ -117,6 +117,12 @@ find_package(ament_cmake QUIET)
 if(ament_cmake_FOUND)
   message(STATUS "Found ament_cmake")
 
+  # 安装 Python 工具：ros2 run logger rostopic_to_csv.py
+  install(PROGRAMS
+    scripts/rostopic_to_csv.py
+    DESTINATION lib/${PROJECT_NAME}
+  )
+
   # 安装测试可执行文件（可选）
   install(TARGETS CsvLogger_test
     DESTINATION lib/${PROJECT_NAME}
